@@ -20,8 +20,8 @@
 
 
 	 <modules>
-        <module>com.chhaichivon.backend</module>
-        <module>com.chhaichivon.frontend</module>
+        <module>backend</module>
+        <module>frontend</module>
     </modules>
 
 	<properties>
