@@ -3,6 +3,7 @@ package com.chhaichivon.backend.springbootangular4.controllers;
 import com.chhaichivon.backend.springbootangular4.models.Product;
 import com.chhaichivon.backend.springbootangular4.services.ProductService;
 import com.chhaichivon.backend.springbootangular4.utils.BaseController;
+import com.chhaichivon.backend.springbootangular4.utils.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,19 +30,21 @@ public class ProductController extends BaseController<Product> {
     public Map<String, Object> map;
 
     @RequestMapping(value = "/products", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<Page<Product>> findAll(
+    public ResponseEntity<Map<String, Object>> findAll(
             @RequestParam(value = "page", required = false, defaultValue = "0") int page,
             @RequestParam(value = "limit", required = false, defaultValue = "15") int limit
     ){
         map = new HashMap<>();
         Page<Product> products= null;
+        Response<Product> response = null;
         try {
             products =  productService.findAll(new PageRequest(page,limit));
+            response.setData(products);
         } catch (Exception e) {
             e.printStackTrace();
             System.out.print("Error" + e.getMessage());
         }
-        return  new ResponseEntity<>(products, HttpStatus.OK);
+        return responseJson(response, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/products/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -53,11 +56,11 @@ public class ProductController extends BaseController<Product> {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return responseJson(product);
+        return responseJson(product, HttpStatus.OK);
     }
 
 
-    @RequestMapping(value = "/products", method = RequestMethod.POST, headers = "Accept=Application/json")
+    @RequestMapping(value = "/products", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<Map<String, Object>> save(@RequestBody Product product) {
         map = new HashMap<>();
         try {
@@ -65,21 +68,26 @@ public class ProductController extends BaseController<Product> {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return responseJson(product);
+        return responseJson(product, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/products", method = RequestMethod.PUT, headers = "Accept=Application/json")
-    public ResponseEntity<Map<String, Object>> update(@RequestBody Product productUpdate){
+    @RequestMapping(value = "/products/{id}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<Map<String, Object>> update(@PathVariable("id") Long id, @RequestBody Product newProduct){
         map = new HashMap<>();
+        Product oldProduct = productService.findById(id);
         try {
-            if(productUpdate !=  null){
-                productService.update(productUpdate);
+            if(oldProduct !=  null){
+                oldProduct.setProductName(newProduct.getProductName());
+                oldProduct.setPrice(newProduct.getPrice());
+                oldProduct.setImageUrl(newProduct.getImageUrl());
+                oldProduct.setDescription(newProduct.getDescription());
+                productService.update(oldProduct);
             }
         }catch (Exception e){
             e.printStackTrace();
             System.out.print(e.getMessage());
         }
-        return responseJson(productUpdate);
+        return responseJson(oldProduct, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/products/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -93,6 +101,6 @@ public class ProductController extends BaseController<Product> {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return responseJson(product);
+        return responseJson(product, HttpStatus.OK);
     }
 }

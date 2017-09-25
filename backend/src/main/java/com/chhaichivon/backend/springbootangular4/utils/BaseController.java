@@ -1,11 +1,10 @@
 package com.chhaichivon.backend.springbootangular4.utils;
 
-import org.springframework.data.domain.Page;
+import com.chhaichivon.backend.springbootangular4.models.Product;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -19,54 +18,44 @@ public class BaseController<T> {
     public static final String MESSAGE_FAILURE = "FAIL";
     private Map<String, Object> map = new HashMap<>();
 
-    /*public Response responseStatus(T item) {
-        if (item != null) {
-            return Response.status(Response.Status.CREATED).build();
-        }
-        return Response.status(Response.Status.NOT_FOUND).build();
-    }
-    public Response responseContent(T item) {
-        if (item != null) {
-            return Response.ok(item).build();
-        }
-        return Response.status(Response.Status.NOT_FOUND).build();
-        //return Response.status(Response.Status.OK).entity(response).type(MediaType.TEXT_PLAIN).build();    }
-    }*/
-
-    private Map<String, Object> mapJson(T object, HttpStatus status, String message) {
-        if(object != null){
-            map.put("DATA", object);
-        }
+    private Map<String,Object> response(HttpStatus status, String message) {
+        map = new HashMap<>();
         map.put("STATUS", status);
         map.put("MESSAGE", message);
         return map;
     }
 
-    public ResponseEntity<Map<String, Object>> responseJson(T object) {
+    private Map<String, Object> mapJson(T object, HttpStatus status, String message) {
+        map = new HashMap<>();
+        if (object != null) {
+            map.put("DATA", object);
+            response(status, message);
+        } else {
+            response(status, message);
+        }
+        return map;
+    }
+
+    public ResponseEntity<Map<String, Object>> responseJson(T object, HttpStatus httpStatus) {
+        map = new HashMap<>();
         if (object != null) {
             map = mapJson(object, HttpStatus.OK, MESSAGE_SUCCESS);
         } else {
-            map = mapJson(null, HttpStatus.NOT_FOUND, MESSAGE_FAILURE);
+            map = mapJson((T) null, HttpStatus.NOT_FOUND, MESSAGE_FAILURE);
         }
-        return new ResponseEntity<>(map, HttpStatus.OK);
+        return new ResponseEntity<>(map, httpStatus);
     }
 
-    public ResponseEntity<Map<String, Object>> responseJson(List<T> objects) {
-        if (!objects.isEmpty()) {
-            map = mapJson((T) objects, HttpStatus.OK, MESSAGE_SUCCESS);
-        } else {
-            map = mapJson(null, HttpStatus.NOT_FOUND, MESSAGE_FAILURE);
+    public ResponseEntity<Map<String, Object>> responseJson(Response<T> object, HttpStatus httpStatus) {
+        map = new HashMap<>();
+        if(object != null){
+            if (object.getData().hasContent()) {
+                map = mapJson((T) object.getData(), HttpStatus.OK, MESSAGE_SUCCESS);
+            } else {
+                map = mapJson((T) null, HttpStatus.NOT_FOUND, MESSAGE_FAILURE);
+            }
         }
-        return new ResponseEntity<>(map, HttpStatus.OK);
-    }
-
-    public ResponseEntity<Page<T>> responseJson(Page<T> objects) {
-        /*if (objects.hasContent()) {
-            map = mapJson(T, HttpStatus.OK, MESSAGE_SUCCESS);
-        } else {
-            map = mapJson(null, HttpStatus.NOT_FOUND, MESSAGE_FAILURE);
-        }*/
-        return new ResponseEntity<>(objects, HttpStatus.OK);
+        return new ResponseEntity<>(map, httpStatus);
     }
 
 }

@@ -12,9 +12,9 @@ import java.io.Serializable;
  * TIME   : 2:27 PM
  */
 public interface BaseService<T> extends Serializable {
-    public Page<T> findAll(Pageable pageable);
-    public T findById(long id);
-    public T save(T entity);
-    public void update(T entity);
-    public void delete(T entity);
+     Page<T> findAll(Pageable pageable);
+     T findById(long id);
+     T save(T entity);
+     void update(T entity);
+     void delete(T entity);
 }
